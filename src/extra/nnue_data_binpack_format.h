@@ -34,6 +34,7 @@
 #include <limits>
 #include <climits>
 #include <optional>
+#include <iomanip>
 
 #if (defined(_MSC_VER) || defined(__INTEL_COMPILER)) && !defined(__clang__)
 #include <intrin.h>
@@ -7519,27 +7520,44 @@ namespace binpack
         }
     };
 
+    inline float convert_result(int result) {
+        if (result == 0) return 0.5;
+        else if (result == -1) return 0;
+        return 1;
+    }
+
+    inline float invert_wdl(float result) {
+        if (result == 0) return 1;
+        else if (result == 1) return 0;
+        return result;
+    }
+
     inline void emitPlainEntry(std::string& buffer, const TrainingDataEntry& plain)
     {
-        buffer += "fen ";
+        // filter captures and positions where stm is in check
+        if (plain.isInCheck() || plain.isCapturingMove())
+            return;
+
+        // extract the result and score
+        auto score = plain.score;
+        // skip if the score do be too big
+        if (std::abs(score) > 10000) return;
+        auto result = convert_result(plain.result);
+        // convert the result and score to white pov
+        if (plain.pos.sideToMove() == chess::Color::Black) {
+            score *= -1;
+            result = invert_wdl(result);
+        }
+
+        // delay the data dumping to make sure you don't write stuff you are supposed to skip to the buffer
         buffer += plain.pos.fen();
-        buffer += '\n';
+        buffer += " | ";
 
-        buffer += "move ";
-        buffer += chess::uci::moveToUci(plain.pos, plain.move);
-        buffer += '\n';
+        buffer += std::to_string(score);
+        buffer += " | ";
 
-        buffer += "score ";
-        buffer += std::to_string(plain.score);
-        buffer += '\n';
-
-        buffer += "ply ";
-        buffer += std::to_string(plain.ply);
-        buffer += '\n';
-
-        buffer += "result ";
-        buffer += std::to_string(plain.result);
-        buffer += "\ne\n";
+        buffer += std::to_string(result);
+        buffer += "\n";
     }
 
     inline void emitBinEntry(std::vector<char>& buffer, const TrainingDataEntry& plain)
