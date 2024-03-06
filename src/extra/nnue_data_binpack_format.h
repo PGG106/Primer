@@ -7563,10 +7563,10 @@ namespace binpack
         ChessBoard board;
         // extract score
         auto score = should_invert ? plain.score *-1 : plain.score;
-        board.score = score;
         // skip if the score do be too big
         if (std::abs(score) > 10000)
             return;
+        board.score = score;
         // extract result, convert it to the format bullet wants
         auto result = plain.result + 1;
         if(should_invert)
@@ -7582,14 +7582,18 @@ namespace binpack
         board.king_square = int(should_invert ? plain.pos.kingSquare(stm).flippedVertically() : plain.pos.kingSquare(stm));
         board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
         // extract the pieces:
-        uint8_t pieces[16];
         int index = 0;
         // get a copy of the occupancy bb to loop over
         auto loopocc = plain.pos.piecesBB().bits();
         while(loopocc){
             // get and remove set bit
             auto piece_square = popLsb(loopocc);
-            auto piece = plain.pos.pieceAt(piece_square);
+            auto piece = int(plain.pos.pieceAt(piece_square));
+            const bool m_high = index % 2;
+            if (m_high)
+                board.pieces[index / 2] = (board.pieces[index / 2] & 0x0F) | (piece << 4);
+            else
+                board.pieces[index / 2] = (board.pieces[index / 2] & 0xF0) | (piece & 0x0F);
             index++;
         }
         // dump it
