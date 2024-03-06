@@ -35,6 +35,7 @@
 #include <climits>
 #include <optional>
 #include <iomanip>
+#include <bit>
 
 #if (defined(_MSC_VER) || defined(__INTEL_COMPILER)) && !defined(__clang__)
 #include <intrin.h>
@@ -7521,15 +7522,74 @@ namespace binpack
     };
 
     inline float convert_result(int result) {
-        if (result == 0) return 0.5;
+        if (result == 0) return 1;
         else if (result == -1) return 0;
-        return 1;
+        return 2;
     }
 
-    inline float invert_wdl(float result) {
-        if (result == 0) return 1;
-        else if (result == 1) return 0;
+    inline int invert_wdl(int result) {
+        if (result == 2) return 0;
+        else if (result == 0) return 2;
+        // 1 stays the same
         return result;
+    }
+
+    // Need to declare our own bb manip because sf sucks
+    inline int GetLsbIndex(uint64_t bitboard)
+    {
+        return std::countr_zero(bitboard);
+    }
+
+    inline int popLsb(uint64_t &bitboard)
+    {
+        int square = GetLsbIndex(bitboard);
+        bitboard &= bitboard - 1;
+        return square;
+    }
+
+    inline void emitBulletFormatEntry(std::string &buffer, const TrainingDataEntry &plain)
+    {
+        // filter captures and positions where stm is in check
+        if (plain.isInCheck() || plain.isCapturingMove())
+            return;
+
+        // extract score
+        auto score = plain.score;
+        // skip if the score do be too big
+        if (std::abs(score) > 10000)
+            return;
+        // extract result, convert them to the format bullet wants
+        auto result = plain.result + 1;
+        // extract the board occupancy
+        uint64_t occupancy = plain.pos.piecesBB().bits();
+        // extract king squares, start by extracting stm and nstm
+        const auto stm = plain.pos.sideToMove();
+        // disgusting fuckery to invert stm
+        const auto nstm = chess::Color(static_cast<int>(plain.pos.sideToMove()) ^ 1);
+        // get the king squares for real, invert them now if needed so we can just use the square method
+        const bool should_invert = stm == chess::Color::Black;
+        uint8_t ownking = int(should_invert ? plain.pos.kingSquare(stm).flippedVertically() : plain.pos.kingSquare(stm));
+        uint8_t enemyking = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
+        // extract the pieces:
+        // get a copy of the occupancy bb to loop over
+        auto loopocc = occupancy;
+        while(loopocc){
+            // get and remove set bit
+            auto piece_square = popLsb(loopocc);
+        }
+
+        //  flip everything as god intended
+        if (should_invert)
+        {
+            score *= -1;
+            result = invert_wdl(result);
+            // use std::byteswap when the compiler on wsl decides to cooperate
+            occupancy = __builtin_bswap64(occupancy);
+            //pieces = idk;
+        }
+
+        // construct the struct
+        // dump it
     }
 
     inline void emitPlainEntry(std::string& buffer, const TrainingDataEntry& plain)
@@ -7556,8 +7616,10 @@ namespace binpack
         buffer += std::to_string(score);
         buffer += " | ";
 
-        buffer += std::to_string(result);
-        buffer += "\n";
+        // Absolutely terrible hack because i can't get std::format to work on gcc 11
+        std::ostringstream str{};
+        str << std::setprecision(1) << result;
+        buffer += str.str();
     }
 
     inline void emitBinEntry(std::vector<char>& buffer, const TrainingDataEntry& plain)
