@@ -40,6 +40,7 @@
 #if (defined(_MSC_VER) || defined(__INTEL_COMPILER)) && !defined(__clang__)
 #include <intrin.h>
 #endif
+#include "bulletformat.h"
 
 namespace chess
 {
@@ -7540,9 +7541,9 @@ namespace binpack
         return std::countr_zero(bitboard);
     }
 
-    inline int popLsb(uint64_t &bitboard)
+    inline chess::Square popLsb(uint64_t &bitboard)
     {
-        int square = GetLsbIndex(bitboard);
+        chess::Square square = chess::Square(GetLsbIndex(bitboard));
         bitboard &= bitboard - 1;
         return square;
     }
@@ -7552,43 +7553,45 @@ namespace binpack
         // filter captures and positions where stm is in check
         if (plain.isInCheck() || plain.isCapturingMove())
             return;
-
-        // extract score
-        auto score = plain.score;
-        // skip if the score do be too big
-        if (std::abs(score) > 10000)
-            return;
-        // extract result, convert them to the format bullet wants
-        auto result = plain.result + 1;
-        // extract the board occupancy
-        uint64_t occupancy = plain.pos.piecesBB().bits();
-        // extract king squares, start by extracting stm and nstm
+        // extract stm and nstm
         const auto stm = plain.pos.sideToMove();
         // disgusting fuckery to invert stm
         const auto nstm = chess::Color(static_cast<int>(plain.pos.sideToMove()) ^ 1);
-        // get the king squares for real, invert them now if needed so we can just use the square method
+        // determine if we need to flip stuff to be stm agnostic
         const bool should_invert = stm == chess::Color::Black;
-        uint8_t ownking = int(should_invert ? plain.pos.kingSquare(stm).flippedVertically() : plain.pos.kingSquare(stm));
-        uint8_t enemyking = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
+        // Create the struct we are going to populate
+        ChessBoard board;
+        // extract score
+        auto score = should_invert ? plain.score *-1 : plain.score;
+        board.score = score;
+        // skip if the score do be too big
+        if (std::abs(score) > 10000)
+            return;
+        // extract result, convert it to the format bullet wants
+        auto result = plain.result + 1;
+        if(should_invert)
+            result = invert_wdl(result);
+        board.result = result;
+        // extract the board occupancy
+        uint64_t occupancy = plain.pos.piecesBB().bits();
+        if (should_invert)
+            // use std::byteswap when the compiler on wsl decides to cooperate
+            occupancy = __builtin_bswap64(occupancy);
+        board.occupancy = occupancy;
+        // get the king squares
+        board.king_square = int(should_invert ? plain.pos.kingSquare(stm).flippedVertically() : plain.pos.kingSquare(stm));
+        board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
         // extract the pieces:
+        uint8_t pieces[16];
+        int index = 0;
         // get a copy of the occupancy bb to loop over
-        auto loopocc = occupancy;
+        auto loopocc = plain.pos.piecesBB().bits();
         while(loopocc){
             // get and remove set bit
             auto piece_square = popLsb(loopocc);
+            auto piece = plain.pos.pieceAt(piece_square);
+            index++;
         }
-
-        //  flip everything as god intended
-        if (should_invert)
-        {
-            score *= -1;
-            result = invert_wdl(result);
-            // use std::byteswap when the compiler on wsl decides to cooperate
-            occupancy = __builtin_bswap64(occupancy);
-            //pieces = idk;
-        }
-
-        // construct the struct
         // dump it
     }
 
