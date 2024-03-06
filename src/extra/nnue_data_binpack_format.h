@@ -7596,7 +7596,9 @@ namespace binpack
                 board.pieces[index / 2] = (board.pieces[index / 2] & 0xF0) | (piece & 0x0F);
             index++;
         }
-        // dump it
+        // force this bad boy to fit in the buffer and dump it
+        const char *data = reinterpret_cast<const char *>(&board);
+        buffer.insert(buffer.end(), data, data + sizeof(board));
     }
 
     inline void emitPlainEntry(std::string& buffer, const TrainingDataEntry& plain)
