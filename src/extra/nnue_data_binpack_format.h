@@ -7564,9 +7564,12 @@ namespace binpack
         // Create the struct we are going to populate
         ChessBoard board;
         // extract score
-        board.result = plain.score;
+        board.result = should_invert ? plain.score * -1 : plain.score;
         // extract result, convert it to the format bullet wants
-        board.result = plain.result + 1;
+        auto result = plain.result + 1;
+        if (should_invert)
+            result = invert_wdl(result);
+        board.result = result;
         // extract the board occupancy
         uint64_t occupancy = plain.pos.piecesBB().bits();
         if (should_invert)
