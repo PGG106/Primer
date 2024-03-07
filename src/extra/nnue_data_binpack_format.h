@@ -7548,10 +7548,12 @@ namespace binpack
         return square;
     }
 
-    inline void emitBulletFormatEntry(std::string &buffer, const TrainingDataEntry &plain)
+    constexpr int bulletformatpiece[12] = {0, 8, 1, 9, 2, 10, 3, 11, 4, 12, 5, 13};
+
+    inline void emitBulletFormatEntry(std::vector<char> &buffer, const TrainingDataEntry &plain)
     {
         // filter captures and positions where stm is in check
-        if (plain.isInCheck() || plain.isCapturingMove())
+        if (plain.isInCheck() || plain.isCapturingMove() || std::abs(plain.score) > 10000)
             return;
         // extract stm and nstm
         const auto stm = plain.pos.sideToMove();
@@ -7562,16 +7564,9 @@ namespace binpack
         // Create the struct we are going to populate
         ChessBoard board;
         // extract score
-        auto score = should_invert ? plain.score *-1 : plain.score;
-        // skip if the score do be too big
-        if (std::abs(score) > 10000)
-            return;
-        board.score = score;
+        board.result = plain.score;
         // extract result, convert it to the format bullet wants
-        auto result = plain.result + 1;
-        if(should_invert)
-            result = invert_wdl(result);
-        board.result = result;
+        board.result = plain.result + 1;
         // extract the board occupancy
         uint64_t occupancy = plain.pos.piecesBB().bits();
         if (should_invert)
@@ -7583,12 +7578,17 @@ namespace binpack
         board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
         // extract the pieces:
         int index = 0;
+        // Try explicit zeroing out the piece array idk
+        std::memset(board.pieces, 0, sizeof(board.pieces));
         // get a copy of the occupancy bb to loop over
         auto loopocc = plain.pos.piecesBB().bits();
         while(loopocc){
             // get and remove set bit
             auto piece_square = popLsb(loopocc);
             auto piece = int(plain.pos.pieceAt(piece_square));
+            piece = bulletformatpiece[piece];
+            if(should_invert)
+                piece = piece ^ 8;
             const bool m_high = index % 2;
             if (m_high)
                 board.pieces[index / 2] = (board.pieces[index / 2] & 0x0F) | (piece << 4);
@@ -7601,7 +7601,7 @@ namespace binpack
         buffer.insert(buffer.end(), data, data + sizeof(board));
     }
 
-    inline void emitPlainEntry(std::string& buffer, const TrainingDataEntry& plain)
+    inline void emitPlainEntry(std::string &buffer, const TrainingDataEntry &plain)
     {
         // filter captures and positions where stm is in check
         if (plain.isInCheck() || plain.isCapturingMove())
@@ -7809,7 +7809,7 @@ namespace binpack
                 return;
             }
 
-            emitBinEntry(buffer, e);
+            emitBulletFormatEntry(buffer, e);
 
             ++numProcessedPositions;
 
