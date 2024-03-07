@@ -7578,7 +7578,7 @@ namespace binpack
         board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
         // extract the pieces:
         int index = 0;
-        // Try explicit zeroing out the piece array idk
+        // Try explicitely zeroing out the piece array idk
         std::memset(board.pieces, 0, sizeof(board.pieces));
         // get a copy of the occupancy bb to loop over
         auto loopocc = plain.pos.piecesBB().bits();
