@@ -26,7 +26,6 @@
 #include <vector>
 #include <functional>
 
-#include "material.h"
 #include "movepick.h"
 #include "pawns.h"
 #include "position.h"
@@ -86,7 +85,6 @@ public:
   void on_eval() { if (on_eval_callback) on_eval_callback(rootPos); }
 
   Pawns::Table pawnsTable;
-  Material::Table materialTable;
   size_t pvIdx, pvLast;
   RunningAverage complexityAverage;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;

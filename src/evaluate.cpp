@@ -31,7 +31,6 @@
 
 #include "bitboard.h"
 #include "evaluate.h"
-#include "material.h"
 #include "misc.h"
 #include "pawns.h"
 #include "thread.h"
@@ -319,7 +318,6 @@ namespace {
     Value winnable(Score score) const;
 
     const Position& pos;
-    Material::Entry* me;
     Pawns::Entry* pe;
     Bitboard mobilityArea[COLOR_NB];
     Score mobility[COLOR_NB] = { SCORE_ZERO, SCORE_ZERO };
@@ -920,56 +918,6 @@ namespace {
 
     // Compute the scale factor for the winning side
     Color strongSide = eg > VALUE_DRAW ? WHITE : BLACK;
-    int sf = me->scale_factor(pos, strongSide);
-
-    // If scale factor is not already specific, scale up/down via general heuristics
-    if (sf == SCALE_FACTOR_NORMAL)
-    {
-        if (pos.opposite_bishops())
-        {
-            // For pure opposite colored bishops endgames use scale factor
-            // based on the number of passed pawns of the strong side.
-            if (   pos.non_pawn_material(WHITE) == BishopValueMg
-                && pos.non_pawn_material(BLACK) == BishopValueMg)
-                sf = 18 + 4 * popcount(pe->passed_pawns(strongSide));
-            // For every other opposite colored bishops endgames use scale factor
-            // based on the number of all pieces of the strong side.
-            else
-                sf = 22 + 3 * pos.count<ALL_PIECES>(strongSide);
-        }
-        // For rook endgames with strong side not having overwhelming pawn number advantage
-        // and its pawns being on one flank and weak side protecting its pieces with a king
-        // use lower scale factor.
-        else if (  pos.non_pawn_material(WHITE) == RookValueMg
-                && pos.non_pawn_material(BLACK) == RookValueMg
-                && pos.count<PAWN>(strongSide) - pos.count<PAWN>(~strongSide) <= 1
-                && bool(KingSide & pos.pieces(strongSide, PAWN)) != bool(QueenSide & pos.pieces(strongSide, PAWN))
-                && (attacks_bb<KING>(pos.square<KING>(~strongSide)) & pos.pieces(~strongSide, PAWN)))
-            sf = 36;
-        // For queen vs no queen endgames use scale factor
-        // based on number of minors of side that doesn't have queen.
-        else if (pos.count<QUEEN>() == 1)
-            sf = 37 + 3 * (pos.count<QUEEN>(WHITE) == 1 ? pos.count<BISHOP>(BLACK) + pos.count<KNIGHT>(BLACK)
-                                                        : pos.count<BISHOP>(WHITE) + pos.count<KNIGHT>(WHITE));
-        // In every other case use scale factor based on
-        // the number of pawns of the strong side reduced if pawns are on a single flank.
-        else
-            sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide)) - 4 * !pawnsOnBothFlanks;
-
-        // Reduce scale factor in case of pawns being on a single flank
-        sf -= 4 * !pawnsOnBothFlanks;
-    }
-
-    // Interpolate between the middlegame and (scaled by 'sf') endgame score
-    v =  mg * int(me->game_phase())
-       + eg * int(PHASE_MIDGAME - me->game_phase()) * ScaleFactor(sf) / SCALE_FACTOR_NORMAL;
-    v /= PHASE_MIDGAME;
-
-    if constexpr (T)
-    {
-        Trace::add(WINNABLE, make_score(u, eg * ScaleFactor(sf) / SCALE_FACTOR_NORMAL - eg_value(score)));
-        Trace::add(TOTAL, make_score(mg, eg * ScaleFactor(sf) / SCALE_FACTOR_NORMAL));
-    }
 
     return Value(v);
   }
@@ -981,78 +929,8 @@ namespace {
 
   template<Tracing T>
   Value Evaluation<T>::value() {
-
-    assert(!pos.checkers());
-
-    // Probe the material hash table
-    me = Material::probe(pos);
-
-    // If we have a specialized evaluation function for the current material
-    // configuration, call it and return.
-    if (me->specialized_eval_exists())
-        return me->evaluate(pos);
-
-    // Initialize score by reading the incrementally updated scores included in
-    // the position object (material + piece square tables) and the material
-    // imbalance. Score is computed internally from the white point of view.
-    Score score = pos.psq_score() + me->imbalance() + pos.this_thread()->trend;
-
-    // Probe the pawn hash table
-    pe = Pawns::probe(pos);
-    score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
-
-    // Early exit if score is high
-    auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
-                                                        + std::abs(pos.this_thread()->bestValue) * 5 / 4
-                                                        + pos.non_pawn_material() / 32;
-    };
-
-    if (lazy_skip(LazyThreshold1))
-        goto make_v;
-
-    // Main evaluation begins here
-    initialize<WHITE>();
-    initialize<BLACK>();
-
-    // Pieces evaluated first (also populates attackedBy, attackedBy2).
-    // Note that the order of evaluation of the terms is left unspecified.
-    score +=  pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
-            + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
-            + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
-            + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
-
-    score += mobility[WHITE] - mobility[BLACK];
-
-    // More complex interactions that require fully populated attack bitboards
-    score +=  king<   WHITE>() - king<   BLACK>()
-            + passed< WHITE>() - passed< BLACK>();
-
-    if (lazy_skip(LazyThreshold2))
-        goto make_v;
-
-    score +=  threats<WHITE>() - threats<BLACK>()
-            + space<  WHITE>() - space<  BLACK>();
-
-make_v:
     // Derive single value from mg and eg parts of score
-    Value v = winnable(score);
-
-    // In case of tracing add all remaining individual evaluation terms
-    if constexpr (T)
-    {
-        Trace::add(MATERIAL, pos.psq_score());
-        Trace::add(IMBALANCE, me->imbalance());
-        Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
-        Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
-    }
-
-    // Evaluation grain
-    v = (v / 16) * 16;
-
-    // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v);
-
+    Value v = Stockfish::Value(1);
     return v;
   }
 
