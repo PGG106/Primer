@@ -7564,7 +7564,7 @@ namespace binpack
         // Create the struct we are going to populate
         ChessBoard board;
         // extract score
-        board.result = should_invert ? plain.score * -1 : plain.score;
+        board.score = should_invert ? plain.score * -1 : plain.score;
         // extract result, convert it to the format bullet wants
         auto result = plain.result + 1;
         if (should_invert)
@@ -7578,7 +7578,7 @@ namespace binpack
         board.occupancy = occupancy;
         // get the king squares
         board.king_square = int(should_invert ? plain.pos.kingSquare(stm).flippedVertically() : plain.pos.kingSquare(stm));
-        board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm).flippedVertically() : plain.pos.kingSquare(nstm));
+        board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm) : plain.pos.kingSquare(nstm).flippedVertically());
         // extract the pieces:
         int index = 0;
         // Try explicitely zeroing out the piece array idk
