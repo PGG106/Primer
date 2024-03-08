@@ -7564,12 +7564,9 @@ namespace binpack
         // Create the struct we are going to populate
         ChessBoard board;
         // extract score
-        board.score = should_invert ? plain.score * -1 : plain.score;
+        board.score = plain.score;
         // extract result, convert it to the format bullet wants
-        auto result = plain.result + 1;
-        if (should_invert)
-            result = invert_wdl(result);
-        board.result = result;
+        board.result = plain.result + 1;
         // extract the board occupancy
         uint64_t occupancy = plain.pos.piecesBB().bits();
         if (should_invert)
@@ -7581,13 +7578,15 @@ namespace binpack
         board.opp_king_square = int(should_invert ? plain.pos.kingSquare(nstm) : plain.pos.kingSquare(nstm).flippedVertically());
         // extract the pieces:
         int index = 0;
-        // Try explicitely zeroing out the piece array idk
+        // explicitely zero out the piece array 
         std::memset(board.pieces, 0, sizeof(board.pieces));
         // get a copy of the occupancy bb to loop over
-        auto loopocc = plain.pos.piecesBB().bits();
+        auto loopocc = board.occupancy;
         while(loopocc){
             // get and remove set bit
             auto piece_square = popLsb(loopocc);
+            if(should_invert)
+            piece_square = piece_square.flippedVertically();
             auto piece = int(plain.pos.pieceAt(piece_square));
             piece = bulletformatpiece[piece];
             if(should_invert)
@@ -7599,6 +7598,11 @@ namespace binpack
                 board.pieces[index / 2] = (board.pieces[index / 2] & 0xF0) | (piece & 0x0F);
             index++;
         }
+        // Match bullet padding so the data is a byte perfect replica
+        board.padding[0] = 127;
+        board.padding[1] = 0;
+        board.padding[2] = 0;
+
         // force this bad boy to fit in the buffer and dump it
         const char *data = reinterpret_cast<const char *>(&board);
         buffer.insert(buffer.end(), data, data + sizeof(board));
