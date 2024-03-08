@@ -37,7 +37,6 @@ int main(int argc, char* argv[]) {
 
   CommandLine::init(argc, argv);
   UCI::init(Options);
-  Tune::init();
   PSQT::init();
   Bitboards::init();
   Position::init();
