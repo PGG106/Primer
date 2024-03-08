@@ -10,8 +10,6 @@
 
 #include "nnue/evaluate_nnue.h"
 
-#include "syzygy/tbprobe.h"
-
 #include <sstream>
 #include <fstream>
 #include <unordered_set>

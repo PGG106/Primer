@@ -14,8 +14,6 @@
 
 #include "nnue/evaluate_nnue.h"
 
-#include "syzygy/tbprobe.h"
-
 #include <atomic>
 #include <chrono>
 #include <climits>

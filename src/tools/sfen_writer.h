@@ -5,8 +5,6 @@
 
 #include "extra/nnue_data_binpack_format.h"
 
-#include "syzygy/tbprobe.h"
-
 #include <cstring>
 #include <fstream>
 #include <limits>

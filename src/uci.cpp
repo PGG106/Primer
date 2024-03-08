@@ -27,7 +27,6 @@
 #include "movegen.h"
 #include "position.h"
 #include "search.h"
-#include "syzygy/tbprobe.h"
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
