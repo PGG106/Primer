@@ -21,12 +21,7 @@
 #include <ostream>
 #include <sstream>
 
-#include "nnue/evaluate_nnue.h"
-#include "evaluate.h"
-#include "misc.h"
 #include "search.h"
-#include "thread.h"
-#include "tt.h"
 #include "uci.h"
 
 using std::string;
@@ -38,18 +33,6 @@ UCI::OptionsMap Options; // Global object
 namespace UCI {
 
 /// 'On change' actions, triggered by an option's value change
-void on_clear_hash(const Option&) { Search::clear(); }
-void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
-void on_logger(const Option& o) { start_logger(o); }
-void on_threads(const Option& o) { Threads.set(size_t(o)); }
-void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
-void on_eval_file(const Option& ) { Eval::NNUE::init(); }
-void on_prune_at_shallow_depth(const Option& o) {
-    Search::prune_at_shallow_depth = o;
-}
-void on_enable_transposition_table(const Option& o) {
-    TranspositionTable::enable_transposition_table = o;
-}
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -65,10 +48,7 @@ void init(OptionsMap& o) {
 
   constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
 
-  o["Debug Log File"]        << Option("", on_logger);
-  o["Threads"]               << Option(1, 1, 512, on_threads);
-  o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
-  o["Clear Hash"]            << Option(on_clear_hash);
+
   o["Ponder"]                << Option(false);
   o["MultiPV"]               << Option(1, 1, 500);
   o["Skill Level"]           << Option(20, 0, 20);
@@ -83,8 +63,7 @@ void init(OptionsMap& o) {
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  o["Use NNUE"]              << Option("true var true var false var pure", "true", on_use_NNUE);
-  o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
+
   // When the evaluation function is loaded at the ucinewgame timing, it is necessary to convert the new evaluation function.
   // I want to hit the test eval convert command, but there is no new evaluation function
   // It ends abnormally before executing this command.
@@ -96,9 +75,7 @@ void init(OptionsMap& o) {
   // Automatically create a folder under this folder like "0/", "1/", ... and save the evaluation function file there.
   o["EvalSaveDir"] << Option("evalsave");
   // Prune at shallow depth on PV nodes. False is recommended when using fixed depth search.
-  o["PruneAtShallowDepth"] << Option(true, on_prune_at_shallow_depth);
   // Enable transposition table.
-  o["EnableTranspositionTable"] << Option(true, on_enable_transposition_table);
 }
 
 

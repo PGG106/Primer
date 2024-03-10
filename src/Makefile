@@ -64,19 +64,9 @@ else
 endif
 
 ### Source and object files
-SRCS = benchmark.cpp bitboard.cpp evaluate.cpp main.cpp \
-	 misc.cpp movegen.cpp movepick.cpp  position.cpp  \
-	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp\
-	nnue/evaluate_nnue.cpp \
-	nnue/features/half_ka_v2_hm.cpp \
-	tools/validate_training_data.cpp \
-	tools/sfen_packer.cpp \
-	tools/training_data_generator.cpp \
-	tools/training_data_generator_nonpv.cpp \
-	tools/opening_book.cpp \
+SRCS =   main.cpp misc.cpp\
+ uci.cpp ucioption.cpp\
 	tools/convert.cpp \
-	tools/transform.cpp \
-	tools/stats.cpp
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
@@ -842,29 +832,6 @@ install:
 clean: objclean profileclean
 	@rm -f .depend *~ core
 
-# evaluation network (nnue)
-net:
-	$(eval nnuenet := $(shell grep EvalFileDefaultName evaluate.h | grep define | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-	@echo "Default net: $(nnuenet)"
-	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
-	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -skL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
-	@if test -f "$(nnuenet)"; then \
-		echo "Already available."; \
-	else \
-		if [ "x$(curl_or_wget)" = "x" ]; then \
-			echo "Automatic download failed: neither curl nor wget is installed. Install one of these tools or download the net manually"; exit 1; \
-		else \
-			echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet);\
-		fi; \
-	fi;
-	$(eval shasum_command := $(shell if hash shasum 2>/dev/null; then echo "shasum -a 256 "; elif hash sha256sum 2>/dev/null; then echo "sha256sum "; fi))
-	@if [ "x$(shasum_command)" != "x" ]; then \
-		if [ "$(nnuenet)" != "nn-"`$(shasum_command) $(nnuenet) | cut -c1-12`".nnue" ]; then \
-			echo "Failed download or $(nnuenet) corrupted, please delete!"; exit 1; \
-		fi \
-	else \
-		echo "shasum / sha256sum not found, skipping net validation"; \
-	fi
 
 # clean binaries and objects
 objclean:
