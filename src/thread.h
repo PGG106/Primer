@@ -27,7 +27,6 @@
 #include <functional>
 
 #include "movepick.h"
-#include "pawns.h"
 #include "position.h"
 #include "search.h"
 #include "thread_win32_osx.h"
@@ -84,7 +83,6 @@ public:
 
   void on_eval() { if (on_eval_callback) on_eval_callback(rootPos); }
 
-  Pawns::Table pawnsTable;
   size_t pvIdx, pvLast;
   RunningAverage complexityAverage;
   std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
