@@ -34,31 +34,6 @@ namespace Stockfish {
 
 extern vector<string> setup_bench(const Position&, istream&);
 
-namespace {
-
-  // setoption() is called when engine receives the "setoption" UCI command. The
-  // function updates the UCI option ("name") to the given value ("value").
-
-  void setoption_from_stream(istringstream& is) {
-
-    string token, name, value;
-
-    is >> token; // Consume "name" token
-
-    // Read option name (can contain spaces)
-    while (is >> token && token != "value")
-        name += (name.empty() ? "" : " ") + token;
-
-    // Read option value (can contain spaces)
-    while (is >> token)
-        value += (value.empty() ? "" : " ") + token;
-
-    UCI::setoption(name, value);
-  }
-
-  
-} // namespace
-
 /// UCI::loop() waits for a command from stdin, parses it and calls the appropriate
 /// function. Also intercepts EOF from stdin to ensure gracefully exiting if the
 /// GUI dies unexpectedly. When called with some command line arguments, e.g. to

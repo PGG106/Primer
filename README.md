@@ -2,5 +2,6 @@
 Primer is a WIP Binpack to Bulletformat parser based on the Stockfish parsing code.
 
 ## How to convert a file.
-Currently Primer is a very rough prototype that only supports a default filtering setting, to filter a binpack with the default settings the command is:
-`./primer convert binpackname.binpack desiredbinname.bin`
+Currently Primer will automatically filter positions in check and where the best move is a capture, additionally it can optionally only filter positions based on a max score.
+An example of a command that uses all the options is 
+`./primer convert binpackname.binpack desiredbinname.bin --maxscore 10000`

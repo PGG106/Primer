@@ -7607,14 +7607,10 @@ namespace binpack
 
     inline void emitPlainEntry(std::string &buffer, const TrainingDataEntry &plain)
     {
-        // filter captures and positions where stm is in check
-        if (plain.isInCheck() || plain.isCapturingMove())
-            return;
-
         // extract the result and score
         auto score = plain.score;
         // skip if the score do be too big
-        if (std::abs(score) > 10000) return;
+     
         auto result = convert_result(plain.result);
         // convert the result and score to white pov
         if (plain.pos.sideToMove() == chess::Color::Black) {
@@ -7642,7 +7638,7 @@ namespace binpack
         buffer.insert(buffer.end(), data, data+sizeof(psv));
     }
 
-    inline void convertBinpackToPlain(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool validate)
+    inline void convertBinpackToPlain(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool filter_score, int score_limit)
     {
         constexpr std::size_t bufferSize = MiB;
 
@@ -7658,11 +7654,13 @@ namespace binpack
         while(reader.hasNext())
         {
             auto e = reader.next();
-            if (validate && !e.isValid())
-            {
-                std::cerr << "Illegal move " << chess::uci::moveToUci(e.pos, e.move) << " for position " << e.pos.fen() << '\n';
-                return;
-            }
+
+            // filter captures , positions where stm is in check
+            if (e.isInCheck() || e.isCapturingMove())
+                continue;
+            // optionally filter positions where the score is too big
+            if (filter_score && std::abs(e.score) > score_limit)
+                continue;
 
             emitPlainEntry(buffer, e);
 
@@ -7689,7 +7687,7 @@ namespace binpack
         std::cout << "Finished. Converted " << numProcessedPositions << " positions.\n";
     }
 
-    inline void convertBinpackToBin(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool validate)
+    inline void convertBinpackToBin(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool filter_score, int score_limit)
     {
         constexpr std::size_t bufferSize = MiB;
 
@@ -7705,14 +7703,12 @@ namespace binpack
         while(reader.hasNext())
         {
             auto e = reader.next();
-            if (validate && !e.isValid())
-            {
-                std::cerr << "Illegal move " << chess::uci::moveToUci(e.pos, e.move) << " for position " << e.pos.fen() << '\n';
-                return;
-            }
 
-            // filter captures , positions where stm is in check, positions where the score is too big
-            if (e.isInCheck() || e.isCapturingMove() || std::abs(e.score) > 10000)
+            // filter captures , positions where stm is in check
+            if (e.isInCheck() || e.isCapturingMove())
+                continue;
+            // optionally filter positions where the score is too big
+            if (filter_score && std::abs(e.score) > score_limit)
                 continue;
 
             emitBulletFormatEntry(buffer, e);

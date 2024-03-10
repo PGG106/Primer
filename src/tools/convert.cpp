@@ -70,7 +70,7 @@ namespace Stockfish::Tools
             && ends_with(output_path, expected_output_extension);
     }
 
-    using ConvertFunctionType = void(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool validate);
+    using ConvertFunctionType = void(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool filter_score, int score_limit);
 
     static ConvertFunctionType* get_convert_function(const std::string& input_path, const std::string& output_path)
     {
@@ -82,7 +82,7 @@ namespace Stockfish::Tools
         return nullptr;
     }
 
-    static void convert(const std::string& input_path, const std::string& output_path, std::ios_base::openmode om, bool validate)
+    static void convert(const std::string& input_path, const std::string& output_path, std::ios_base::openmode om, bool filter_score, int score_limit)
     {
         if(!file_exists(input_path))
         {
@@ -93,7 +93,7 @@ namespace Stockfish::Tools
         auto func = get_convert_function(input_path, output_path);
         if (func != nullptr)
         {
-            func(input_path, output_path, om, validate);
+            func(input_path, output_path, om, filter_score, score_limit);
         }
         else
         {
@@ -103,22 +103,47 @@ namespace Stockfish::Tools
 
     static void convert(const std::vector<std::string>& args)
     {
-        if (args.size() < 2 || args.size() > 4)
+        if (args.size() < 2 || args.size() > 5)
         {
             std::cerr << "Invalid arguments.\n";
-            std::cerr << "Usage: convert from_path to_path [append] [validate]\n";
+            std::cerr << "Usage: convert from_path to_path [append] --max-score <score>\n";
             return;
         }
 
-        const bool append = std::find(args.begin() + 2, args.end(), "append") != args.end();
-        const bool validate = std::find(args.begin() + 2, args.end(), "validate") != args.end();
+        bool append = false;
+        bool filter_score = false;
+        // inactive unless filter_score is true and we recieve it from the end user, set it to a value that will cause no filtering to take place, just in case yknow
+        int max_score = 777777;
+        // loop over all the tokens and parse the commands
+        for (size_t i = 1; i < args.size(); i++)
+        {
+            if (args.at(i) == "append")
+                append = true;
+            else if (args.at(i) == "--max-score")
+            {
+                filter_score = true;
+                try
+                {
+                    max_score = std::stoi(args.at(i + 1));
+                    if(max_score < 0){
+                        std::cerr << "The score used for sign filtering is used as an absolute value, please use a positive number\n";
+                        return;
+                    }
+                }
+                catch (...)
+                {
+                    std::cerr << "Invalid number for score filtering\n";
+                    return;
+                }
+            }
+        }
 
         const std::ios_base::openmode openmode =
             append
-            ? std::ios_base::app
-            : std::ios_base::trunc;
+                ? std::ios_base::app
+                : std::ios_base::trunc;
 
-        convert(args[0], args[1], openmode, validate);
+        convert(args[0], args[1], openmode, filter_score, max_score);
     }
 
     void convert(istringstream& is)

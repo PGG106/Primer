@@ -46,9 +46,6 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 
 void init(OptionsMap& o) {
 
-  constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
-
-
   o["Ponder"]                << Option(false);
   o["MultiPV"]               << Option(1, 1, 500);
   o["Skill Level"]           << Option(20, 0, 20);
