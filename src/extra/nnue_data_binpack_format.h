@@ -41,6 +41,7 @@
 #include <intrin.h>
 #endif
 #include "bulletformat.h"
+#include "./tools/settings.h"
 
 namespace chess
 {
@@ -7638,7 +7639,7 @@ namespace binpack
         buffer.insert(buffer.end(), data, data+sizeof(psv));
     }
 
-    inline void convertBinpackToPlain(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool filter_score, int score_limit)
+    inline void convertBinpackToPlain(std::string inputPath, std::string outputPath, std::ios_base::openmode om, parser_settings settings)
     {
         constexpr std::size_t bufferSize = MiB;
 
@@ -7659,7 +7660,7 @@ namespace binpack
             if (e.isInCheck() || e.isCapturingMove())
                 continue;
             // optionally filter positions where the score is too big
-            if (filter_score && std::abs(e.score) > score_limit)
+            if (settings.filter_score && std::abs(e.score) > settings.max_score)
                 continue;
 
             emitPlainEntry(buffer, e);
@@ -7687,7 +7688,7 @@ namespace binpack
         std::cout << "Finished. Converted " << numProcessedPositions << " positions.\n";
     }
 
-    inline void convertBinpackToBin(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool filter_score, int score_limit)
+    inline void convertBinpackToBin(std::string inputPath, std::string outputPath, std::ios_base::openmode om, parser_settings settings)
     {
         constexpr std::size_t bufferSize = MiB;
 
@@ -7708,7 +7709,7 @@ namespace binpack
             if (e.isInCheck() || e.isCapturingMove())
                 continue;
             // optionally filter positions where the score is too big
-            if (filter_score && std::abs(e.score) > score_limit)
+            if (settings.filter_score && std::abs(e.score) > settings.max_score)
                 continue;
 
             emitBulletFormatEntry(buffer, e);

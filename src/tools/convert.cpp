@@ -19,6 +19,7 @@
 #include <regex>
 #include <filesystem>
 #include <misc.h>
+#include "settings.h"
 
 using namespace std;
 namespace sys = std::filesystem;
@@ -70,7 +71,7 @@ namespace Stockfish::Tools
             && ends_with(output_path, expected_output_extension);
     }
 
-    using ConvertFunctionType = void(std::string inputPath, std::string outputPath, std::ios_base::openmode om, bool filter_score, int score_limit);
+    using ConvertFunctionType = void(std::string inputPath, std::string outputPath, std::ios_base::openmode om, parser_settings settings);
 
     static ConvertFunctionType* get_convert_function(const std::string& input_path, const std::string& output_path)
     {
@@ -82,7 +83,7 @@ namespace Stockfish::Tools
         return nullptr;
     }
 
-    static void convert(const std::string& input_path, const std::string& output_path, std::ios_base::openmode om, bool filter_score, int score_limit)
+    static void convert(const std::string& input_path, const std::string& output_path, std::ios_base::openmode om, parser_settings settings)
     {
         if(!file_exists(input_path))
         {
@@ -93,7 +94,7 @@ namespace Stockfish::Tools
         auto func = get_convert_function(input_path, output_path);
         if (func != nullptr)
         {
-            func(input_path, output_path, om, filter_score, score_limit);
+            func(input_path, output_path, om, settings);
         }
         else
         {
@@ -111,9 +112,7 @@ namespace Stockfish::Tools
         }
 
         bool append = false;
-        bool filter_score = false;
-        // inactive unless filter_score is true and we recieve it from the end user, set it to a value that will cause no filtering to take place, just in case yknow
-        int max_score = 777777;
+        parser_settings settings;
         // loop over all the tokens and parse the commands
         for (size_t i = 1; i < args.size(); i++)
         {
@@ -121,11 +120,12 @@ namespace Stockfish::Tools
                 append = true;
             else if (args.at(i) == "--max-score")
             {
-                filter_score = true;
+                settings.filter_score = true;
                 try
                 {
-                    max_score = std::stoi(args.at(i + 1));
-                    if(max_score < 0){
+                    settings.max_score = std::stoi(args.at(i + 1));
+                    if (settings.max_score < 0)
+                    {
                         std::cerr << "The score used for sign filtering is used as an absolute value, please use a positive number\n";
                         return;
                     }
@@ -143,7 +143,7 @@ namespace Stockfish::Tools
                 ? std::ios_base::app
                 : std::ios_base::trunc;
 
-        convert(args[0], args[1], openmode, filter_score, max_score);
+        convert(args[0], args[1], openmode, settings);
     }
 
     void convert(istringstream& is)
