@@ -74,16 +74,6 @@ namespace Stockfish::Tools
 
     static ConvertFunctionType* get_convert_function(const std::string& input_path, const std::string& output_path)
     {
-        if (is_convert_of_type(input_path, output_path, plain_extension, bin_extension))
-            return binpack::convertPlainToBin;
-        if (is_convert_of_type(input_path, output_path, plain_extension, binpack_extension))
-            return binpack::convertPlainToBinpack;
-
-        if (is_convert_of_type(input_path, output_path, bin_extension, plain_extension))
-            return binpack::convertBinToPlain;
-        if (is_convert_of_type(input_path, output_path, bin_extension, binpack_extension))
-            return binpack::convertBinToBinpack;
-
         if (is_convert_of_type(input_path, output_path, binpack_extension, plain_extension))
             return binpack::convertBinpackToPlain;
         if (is_convert_of_type(input_path, output_path, binpack_extension, bin_extension))
@@ -146,31 +136,6 @@ namespace Stockfish::Tools
         }
 
         convert(args);
-    }
-
-    static void append_files_from_dir(
-        std::vector<std::string>& filenames,
-        const std::string& base_dir,
-        const std::string& target_dir)
-    {
-        string kif_base_dir = Path::combine(base_dir, target_dir);
-
-        sys::path p(kif_base_dir); // Origin of enumeration
-        std::for_each(sys::directory_iterator(p), sys::directory_iterator(),
-            [&](const sys::path& path) {
-                if (sys::is_regular_file(path))
-                    filenames.push_back(Path::combine(target_dir, path.filename().generic_string()));
-            });
-    }
-
-    static void rebase_files(
-        std::vector<std::string>& filenames,
-        const std::string& base_dir)
-    {
-        for (auto& file : filenames)
-        {
-            file = Path::combine(base_dir, file);
-        }
     }
 }
     
