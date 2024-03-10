@@ -39,9 +39,9 @@ endif
 
 ### Executable name
 ifeq ($(target_windows),yes)
-	EXE = stockfish.exe
+	EXE = primer.exe
 else
-	EXE = stockfish
+	EXE = primer
 endif
 
 ### Establish the operating system name
