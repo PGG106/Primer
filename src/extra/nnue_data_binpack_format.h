@@ -7706,7 +7706,9 @@ namespace binpack
             auto e = reader.next();
 
             // filter captures , positions where stm is in check
-            if (e.isInCheck() || e.isCapturingMove())
+            if (settings.filter_checks && e.isInCheck())
+                continue;
+            if (settings.filter_captures && e.isCapturingMove())
                 continue;
             // optionally filter positions where the score is too big
             if (settings.filter_score && std::abs(e.score) > settings.max_score)

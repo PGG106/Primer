@@ -104,10 +104,10 @@ namespace Stockfish::Tools
 
     static void convert(const std::vector<std::string>& args)
     {
-        if (args.size() < 2 || args.size() > 5)
+        if (args.size() < 2 || args.size() > 6)
         {
             std::cerr << "Invalid arguments.\n";
-            std::cerr << "Usage: convert from_path to_path [append] --max-score <score>\n";
+            std::cerr << "Usage: convert from_path to_path [append] --filter-captures --filter-in-check --max-score <score>\n";
             return;
         }
 
@@ -135,6 +135,14 @@ namespace Stockfish::Tools
                     std::cerr << "Invalid number for score filtering\n";
                     return;
                 }
+            }
+            else if (args.at(i) == "--filter-captures")
+            {
+                settings.filter_captures = true;
+            }
+            else if (args.at(i) == "--filter-in-check")
+            {
+                settings.filter_checks = true;
             }
         }
 
