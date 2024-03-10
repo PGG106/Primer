@@ -7552,9 +7552,6 @@ namespace binpack
 
     inline void emitBulletFormatEntry(std::vector<char> &buffer, const TrainingDataEntry &plain)
     {
-        // filter captures and positions where stm is in check
-        if (plain.isInCheck() || plain.isCapturingMove() || std::abs(plain.score) > 10000)
-            return;
         // extract stm and nstm
         const auto stm = plain.pos.sideToMove();
         // disgusting fuckery to invert stm
@@ -7816,8 +7813,12 @@ namespace binpack
                 return;
             }
 
-            emitBulletFormatEntry(buffer, e);
+            // filter captures , positions where stm is in check, positions where the score is too big
+            if (e.isInCheck() || e.isCapturingMove() || std::abs(e.score) > 10000)
+                continue;
 
+            emitBulletFormatEntry(buffer, e);
+            
             ++numProcessedPositions;
 
             if (buffer.size() > bufferSize)

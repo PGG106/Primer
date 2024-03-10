@@ -4,7 +4,6 @@
 
 #include "extra/nnue_data_binpack_format.h"
 
-
 #include <sstream>
 #include <fstream>
 #include <unordered_set>
@@ -43,76 +42,6 @@ namespace Stockfish::Tools
         ltrim(s);
         rtrim(s);
     }
-
-    int parse_game_result_from_pgn_extract(std::string result) {
-        // White Win
-        if (result == "\"1-0\"") {
-            return 1;
-        }
-        // Black Win
-        else if (result == "\"0-1\"") {
-            return -1;
-        }
-        // Draw
-        else {
-            return 0;
-        }
-    }
-
-    // 0.25 -->  0.25 * PawnValueEg
-    // #-4  --> -mate_in(4)
-    // #3   -->  mate_in(3)
-    // -M4  --> -mate_in(4)
-    // +M3  -->  mate_in(3)
-    Value parse_score_from_pgn_extract(std::string eval, bool& success) {
-        success = true;
-
-        if (eval.substr(0, 1) == "#") {
-            if (eval.substr(1, 1) == "-") {
-                return -mate_in(stoi(eval.substr(2, eval.length() - 2)));
-            }
-            else {
-                return mate_in(stoi(eval.substr(1, eval.length() - 1)));
-            }
-        }
-        else if (eval.substr(0, 2) == "-M") {
-            //std::cout << "eval=" << eval << std::endl;
-            return -mate_in(stoi(eval.substr(2, eval.length() - 2)));
-        }
-        else if (eval.substr(0, 2) == "+M") {
-            //std::cout << "eval=" << eval << std::endl;
-            return mate_in(stoi(eval.substr(2, eval.length() - 2)));
-        }
-        else {
-            char* endptr;
-            double value = strtod(eval.c_str(), &endptr);
-
-            if (*endptr != '\0') {
-                success = false;
-                return VALUE_ZERO;
-            }
-            else {
-                return Value(value * static_cast<double>(PawnValueEg));
-            }
-        }
-    }
-
-    // for Debug
-    //#define DEBUG_CONVERT_BIN_FROM_PGN_EXTRACT
-
-    bool is_like_fen(std::string fen) {
-        int count_space = std::count(fen.cbegin(), fen.cend(), ' ');
-        int count_slash = std::count(fen.cbegin(), fen.cend(), '/');
-
-#if defined(DEBUG_CONVERT_BIN_FROM_PGN_EXTRACT)
-        //std::cout << "count_space=" << count_space << std::endl;
-        //std::cout << "count_slash=" << count_slash << std::endl;
-#endif
-
-        return count_space == 5 && count_slash == 7;
-    }
-
- 
 
     static inline const std::string plain_extension = ".plain";
     static inline const std::string bin_extension = ".bin";
@@ -243,7 +172,5 @@ namespace Stockfish::Tools
             file = Path::combine(base_dir, file);
         }
     }
-
-   
 }
     
