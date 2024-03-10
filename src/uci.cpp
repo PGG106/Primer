@@ -36,12 +36,6 @@ extern vector<string> setup_bench(const Position&, istream&);
 
 namespace {
 
-  // position() is called when engine receives the "position" UCI command.
-  // The function sets up the position described in the given FEN string ("fen")
-  // or the starting position ("startpos") and then makes the moves given in the
-  // following move list ("moves").
-
-
   // setoption() is called when engine receives the "setoption" UCI command. The
   // function updates the UCI option ("name") to the given value ("value").
 
@@ -64,13 +58,6 @@ namespace {
 
   
 } // namespace
-
-// --------------------
-// Call qsearch(),search() directly for testing
-// --------------------
-
-
-
 
 /// UCI::loop() waits for a command from stdin, parses it and calls the appropriate
 /// function. Also intercepts EOF from stdin to ensure gracefully exiting if the
@@ -122,13 +109,6 @@ string UCI::value(Value v) {
   return ss.str();
 }
 
-
-/// UCI::wdl() report WDL statistics given an evaluation and a game ply, based on
-/// data gathered for fishtest LTC games.
-
-
-
-
 /// UCI::square() converts a Square to a string in algebraic notation (g1, a7, etc.)
 
 std::string UCI::square(Square s) {
@@ -162,8 +142,5 @@ string UCI::move(Move m, bool chess960) {
 
   return move;
 }
-
-
-
 
 } // namespace Stockfish
