@@ -153,7 +153,20 @@ namespace Stockfish::Tools
                 }
                 catch (...)
                 {
-                    std::cerr << "Invalid number for score filtering\n";
+                    std::cerr << "Invalid number for win filtering\n";
+                    return;
+                }
+            }
+            else if (args.at(i) == "--filter-loss")
+            {
+                settings.filter_loss = true;
+                try
+                {
+                    settings.loss_filter_score = std::stoi(args.at(i + 1));
+                }
+                catch (...)
+                {
+                    std::cerr << "Invalid number for win filtering\n";
                     return;
                 }
             }
@@ -167,6 +180,8 @@ namespace Stockfish::Tools
             append
                 ? std::ios_base::app
                 : std::ios_base::trunc;
+
+        // TODO: show a recap of the filter settings
 
         convert(args[0], args[1], openmode, settings);
     }
