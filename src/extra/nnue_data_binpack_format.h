@@ -7736,6 +7736,12 @@ namespace binpack
                 const auto cur = outputFile.tellp();
                 std::cout << "Processed " << (cur - base) << " bytes and " << numProcessedPositions << " positions.\n";
             }
+
+            if (settings.position_limit && numProcessedPositions >= settings.max_pos_count)
+            {
+                std::cout << "Finished. Converted " << numProcessedPositions << " positions.\n";
+                return;
+            }
         }
 
         if (!buffer.empty())

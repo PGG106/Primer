@@ -9,4 +9,6 @@ struct parser_settings{
     int win_filter_score;
     bool filter_loss = false;
     int loss_filter_score;
+    bool position_limit = false;
+    std::size_t max_pos_count;
 };

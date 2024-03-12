@@ -15,7 +15,8 @@ Filters all positions with a abs(score) \> max_score.
 Filters positions in a won game (from stm pov) with a score \< win_filter_score.
 * #### --filter-loss loss_filter_score
 Filters positions in a lost game (from stm pov) with a score \> loss_filter_score.
-
+* #### ----limit-positions max_pos_count
+Stops after having parsed max_pos_count positions, filtered positions don't count towards the total.
 
 ## How to convert a file.
 Here's an example of a basic Primer command \

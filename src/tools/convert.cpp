@@ -104,7 +104,7 @@ namespace Stockfish::Tools
 
     static void convert(const std::vector<std::string>& args)
     {
-        if (args.size() < 2 || args.size() > 8)
+        if (args.size() < 2 || args.size() > 10)
         {
             std::cerr << "Invalid arguments.\n";
             std::cerr << "Usage: convert from_path to_path [append] --filter-captures --filter-in-check --max-score <score>\n";
@@ -167,6 +167,23 @@ namespace Stockfish::Tools
                 catch (...)
                 {
                     std::cerr << "Invalid number for loss filtering\n";
+                    return;
+                }
+            }
+            else if (args.at(i) == "--limit-positions")
+            {
+                settings.position_limit = true;
+                try
+                {
+                    settings.max_pos_count = std::stoi(args.at(i + 1));
+                    if (settings.max_pos_count <= 0){
+                        std::cerr << "max pos count should be a positive integer\n";
+                        return;
+                    }
+                }
+                catch (...)
+                {
+                    std::cerr << "Invalid number for limit positions\n";
                     return;
                 }
             }
