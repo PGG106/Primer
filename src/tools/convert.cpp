@@ -180,9 +180,11 @@ namespace Stockfish::Tools
             append
                 ? std::ios_base::app
                 : std::ios_base::trunc;
-                
+
         if (!(settings.filter_loss || settings.filter_win || settings.filter_captures || settings.filter_checks || settings.filter_score))
-            std::cerr << "Warning: no filter option was selected\n";
+            std::cout << "Warning: no filter option was selected\n";
+        if (!(settings.filter_captures || settings.filter_checks))
+            std::cout << "Warning: Captures and in check filtering are not enabled, this will produce terrible data for NNUE\n";
         // TODO: show a recap of the filter settings
 
         convert(args[0], args[1], openmode, settings);
