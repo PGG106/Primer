@@ -136,13 +136,13 @@ namespace Stockfish::Tools
                     return;
                 }
             }
-            else if (args.at(i) == "--filter-captures")
+            else if (args.at(i) == "--no-filter-captures")
             {
-                settings.filter_captures = true;
+                settings.filter_captures = false;
             }
-            else if (args.at(i) == "--filter-in-check")
+            else if (args.at(i) == "--no-filter-in-check")
             {
-                settings.filter_checks = true;
+                settings.filter_checks = false;
             }
             else if (args.at(i) == "--filter-win")
             {
@@ -166,7 +166,7 @@ namespace Stockfish::Tools
                 }
                 catch (...)
                 {
-                    std::cerr << "Invalid number for win filtering\n";
+                    std::cerr << "Invalid number for loss filtering\n";
                     return;
                 }
             }
@@ -193,7 +193,6 @@ namespace Stockfish::Tools
     void convert(istringstream& is)
     {
         std::vector<std::string> args;
-
         while (true)
         {
             std::string token = "";
@@ -203,7 +202,6 @@ namespace Stockfish::Tools
 
             args.push_back(token);
         }
-
         convert(args);
     }
 }
