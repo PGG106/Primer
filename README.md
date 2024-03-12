@@ -1,7 +1,22 @@
 ## Overview
 Primer is a WIP Binpack to Bulletformat parser based on the Stockfish parsing code.
 
+## Filtering options
+Primer can filter your data for you as it parses the binpack.
+Currently it filters positions where the best move is a capture and positions where stm is in check by default.
+It also offers several optional filtering options:
+* #### --no-filter-captures
+Disables the default filtering of positions where the best move is a capture.
+* #### --no-filter-in-check
+Disables the default filtering of positions where stm is in check.
+* #### --max-score max_score
+Filters all positions with a abs(score) \> max_score.
+* #### --filter-win win_filter_score
+Filters positions in a won game (from stm pov) with a score \< win_filter_score.
+* #### --filter-loss loss_filter_score
+Filters positions in a lost game (from stm pov) with a score \> loss_filter_score.
+
+
 ## How to convert a file.
-Currently Primer can optionally filter positions in check, positions where the best move is a capture, and positions whose score (in absolute value) is bigger than a set max score.
-An example of a command that uses all the options is 
-`./primer convert binpackname.binpack desiredbinname.bin --filter-in-check --filter-captures --max-score 10000`
+Here's an example of a basic Primer command \
+`./primer convert binpackname.binpack desiredbinname.bin --max-score 10000`
