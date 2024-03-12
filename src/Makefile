@@ -64,7 +64,7 @@ else
 endif
 
 ### Source and object files
-SRCS =   main.cpp misc.cpp\
+SRCS =   main.cpp \
  uci.cpp ucioption.cpp\
 	tools/convert.cpp \
 
