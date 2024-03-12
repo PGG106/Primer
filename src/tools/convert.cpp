@@ -104,7 +104,7 @@ namespace Stockfish::Tools
 
     static void convert(const std::vector<std::string>& args)
     {
-        if (args.size() < 2 || args.size() > 6)
+        if (args.size() < 2 || args.size() > 8)
         {
             std::cerr << "Invalid arguments.\n";
             std::cerr << "Usage: convert from_path to_path [append] --filter-captures --filter-in-check --max-score <score>\n";
@@ -143,6 +143,23 @@ namespace Stockfish::Tools
             else if (args.at(i) == "--filter-in-check")
             {
                 settings.filter_checks = true;
+            }
+            else if (args.at(i) == "--filter-win")
+            {
+                settings.filter_win = true;
+                try
+                {
+                    settings.win_filter_score = std::stoi(args.at(i + 1));
+                }
+                catch (...)
+                {
+                    std::cerr << "Invalid number for score filtering\n";
+                    return;
+                }
+            }
+            else if (args.at(i).find('-') != std::string::npos){
+                std::cerr << "Error, unrecognized option: "<< args.at(i) << std::endl;
+                return;
             }
         }
 

@@ -7713,6 +7713,11 @@ namespace binpack
             // optionally filter positions where the score is too big
             if (settings.filter_score && std::abs(e.score) > settings.max_score)
                 continue;
+            // optionally filter positions in won games with very bad scores
+            if (settings.filter_win 
+                && e.result == 1
+                && e.score < settings.win_filter_score)
+                continue;
 
             emitBulletFormatEntry(buffer, e);
             

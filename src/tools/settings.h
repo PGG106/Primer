@@ -5,4 +5,8 @@ struct parser_settings{
     bool filter_captures = false;
     bool filter_score = false;
     int max_score;
+    bool filter_win = false;
+    int win_filter_score;
+    bool filter_loss = false;
+    int loss_filter_score;
 };
