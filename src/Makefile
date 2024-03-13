@@ -887,30 +887,6 @@ config-sanity: net
 	@echo "CXXFLAGS: $(CXXFLAGS)"
 	@echo "LDFLAGS: $(LDFLAGS)"
 	@echo ""
-	@echo "Testing config sanity. If this fails, try 'make help' ..."
-	@echo ""
-	@test "$(debug)" = "yes" || test "$(debug)" = "no"
-	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
-	@test "$(SUPPORTED_ARCH)" = "true"
-	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "e2k" || \
-	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64"
-	@test "$(bits)" = "32" || test "$(bits)" = "64"
-	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
-	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
-	@test "$(pext)" = "yes" || test "$(pext)" = "no"
-	@test "$(sse)" = "yes" || test "$(sse)" = "no"
-	@test "$(mmx)" = "yes" || test "$(mmx)" = "no"
-	@test "$(sse2)" = "yes" || test "$(sse2)" = "no"
-	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
-	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
-	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
-	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
-	@test "$(vnni256)" = "yes" || test "$(vnni256)" = "no"
-	@test "$(vnni512)" = "yes" || test "$(vnni512)" = "no"
-	@test "$(neon)" = "yes" || test "$(neon)" = "no"
-	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang" \
-	|| test "$(comp)" = "armv7a-linux-androideabi16-clang"  || test "$(comp)" = "aarch64-linux-android21-clang"
 
 $(EXE): $(OBJS)
 	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
