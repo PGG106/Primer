@@ -169,6 +169,19 @@ namespace Stockfish::Tools
                     return;
                 }
             }
+            else if (args.at(i) == "--min-ply")
+            {
+                settings.filter_ply = true;
+                try
+                {
+                    settings.min_ply = std::stoi(args.at(i + 1));
+                }
+                catch (...)
+                {
+                    std::cerr << "Invalid number for min ply\n";
+                    return;
+                }
+            }
             else if (args.at(i) == "--limit-positions")
             {
                 settings.position_limit = true;

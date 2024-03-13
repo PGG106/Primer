@@ -7704,14 +7704,16 @@ namespace binpack
         while(reader.hasNext())
         {
             auto e = reader.next();
-
-            // filter captures , positions where stm is in check
-            if (settings.filter_checks && e.isInCheck())
-                continue;
-            if (settings.filter_captures && e.isCapturingMove())
+            // optionally filter positions where the ply count is too small
+            if (settings.filter_ply && e.ply < settings.min_ply)
                 continue;
             // optionally filter positions where the score is too big
             if (settings.filter_score && std::abs(e.score) > settings.max_score)
+                continue;
+            // filter captures , positions where stm is in check
+            if (settings.filter_captures && e.isCapturingMove())
+                continue;
+            if (settings.filter_checks && e.isInCheck())
                 continue;
             // optionally filter positions in won games with very low scores
             if (settings.filter_win 
