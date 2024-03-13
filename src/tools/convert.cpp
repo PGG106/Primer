@@ -199,7 +199,7 @@ namespace Stockfish::Tools
                     return;
                 }
             }
-            else if (args.at(i).find('-') != std::string::npos){
+            else if (args.at(i).find('--') != std::string::npos){
                 std::cerr << "Error, unrecognized option: "<< args.at(i) << std::endl;
                 return;
             }
