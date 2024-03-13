@@ -11,7 +11,7 @@ Disables the default filtering of positions where the best move is a capture.
 Disables the default filtering of positions where stm is in check.
 * #### --max-score max_score
 Filters all positions with a abs(score) \> max_score.
-* #### --max-score max_score --min-ply minimum_ply_count
+* #### --min-ply minimum_ply_count
 Filters all the positions with a ply count \< minimum_ply_count
 * #### --filter-win win_filter_score
 Filters positions in a won game (from stm pov) with a score \< win_filter_score.

@@ -7700,7 +7700,7 @@ namespace binpack
         std::size_t numProcessedPositions = 0;
         std::vector<char> buffer;
         buffer.reserve(bufferSize * 2);
-
+        bool skipNext = false;
         while(reader.hasNext())
         {
             auto e = reader.next();
