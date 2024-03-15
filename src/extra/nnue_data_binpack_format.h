@@ -7703,6 +7703,9 @@ namespace binpack
         uint64_t filtered_checks_counter = 0;
         uint64_t filtered_captures_counter = 0;
         uint64_t filtered_scores_counter = 0;
+        uint64_t filtered_wins_counter = 0;
+        uint64_t filtered_losses_counter = 0;
+
         while(reader.hasNext())
         {
             auto e = reader.next();
@@ -7726,13 +7729,17 @@ namespace binpack
             // optionally filter positions in won games with very low scores
             if (settings.filter_win 
                 && e.result == 1
-                && e.score < settings.win_filter_score)
-                continue;
+                && e.score < settings.win_filter_score){
+                    filtered_wins_counter++;
+                    continue;
+                }
             // optionally filter positions in lost games with very high scores
             if (settings.filter_loss
                 && e.result == -1
-                && e.score > settings.loss_filter_score)
-                continue;
+                && e.score > settings.loss_filter_score){
+                    filtered_losses_counter++;
+                    continue;
+                }
 
             emitBulletFormatEntry(buffer, e);
             
@@ -7767,6 +7774,8 @@ namespace binpack
         std::cout << "Checks filtered: " << filtered_checks_counter << " \n";
         std::cout << "Captures filtered: " << filtered_captures_counter << " \n";
         std::cout << "Scores filtered: " << filtered_scores_counter << " \n";
+        std::cout << "Wins filtered: " << filtered_wins_counter << " \n";
+        std::cout << "Losses filtered: " << filtered_losses_counter << " \n";
     }
 
     inline void validateBinpack(std::string inputPath)
