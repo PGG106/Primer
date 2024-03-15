@@ -7703,6 +7703,7 @@ namespace binpack
         uint64_t filtered_checks_counter = 0;
         uint64_t filtered_captures_counter = 0;
         uint64_t filtered_scores_counter = 0;
+        uint64_t filtered_plies_counter = 0;
         uint64_t filtered_wins_counter = 0;
         uint64_t filtered_losses_counter = 0;
 
@@ -7710,8 +7711,10 @@ namespace binpack
         {
             auto e = reader.next();
             // optionally filter positions where the ply count is too small
-            if (settings.filter_ply && e.ply < settings.min_ply)
+            if (settings.filter_ply && e.ply < settings.min_ply){
+                filtered_plies_counter++;
                 continue;
+            }
             // optionally filter positions where the score is too big
             if (settings.filter_score && std::abs(e.score) > settings.max_score){
                 filtered_scores_counter++;
@@ -7774,6 +7777,7 @@ namespace binpack
         std::cout << "Checks filtered: " << filtered_checks_counter << " \n";
         std::cout << "Captures filtered: " << filtered_captures_counter << " \n";
         std::cout << "Scores filtered: " << filtered_scores_counter << " \n";
+        std::cout << "Plies filtered: " << filtered_plies_counter << " \n";
         std::cout << "Wins filtered: " << filtered_wins_counter << " \n";
         std::cout << "Losses filtered: " << filtered_losses_counter << " \n";
     }
