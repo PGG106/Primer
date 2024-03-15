@@ -7700,7 +7700,9 @@ namespace binpack
         std::size_t numProcessedPositions = 0;
         std::vector<char> buffer;
         buffer.reserve(bufferSize * 2);
-        bool skipNext = false;
+        uint64_t filtered_checks_counter = 0;
+        uint64_t filtered_captures_counter = 0;
+        uint64_t filtered_scores_counter = 0;
         while(reader.hasNext())
         {
             auto e = reader.next();
@@ -7708,13 +7710,19 @@ namespace binpack
             if (settings.filter_ply && e.ply < settings.min_ply)
                 continue;
             // optionally filter positions where the score is too big
-            if (settings.filter_score && std::abs(e.score) > settings.max_score)
+            if (settings.filter_score && std::abs(e.score) > settings.max_score){
+                filtered_scores_counter++;
                 continue;
+            }
             // filter captures , positions where stm is in check
-            if (settings.filter_captures && e.isCapturingMove())
+            if (settings.filter_captures && e.isCapturingMove()){
+                filtered_captures_counter++;
                 continue;
-            if (settings.filter_checks && e.isInCheck())
+            }
+            if (settings.filter_checks && e.isInCheck()){
+                filtered_checks_counter++;
                 continue;
+            }
             // optionally filter positions in won games with very low scores
             if (settings.filter_win 
                 && e.result == 1
@@ -7741,8 +7749,7 @@ namespace binpack
 
             if (settings.position_limit && numProcessedPositions >= settings.max_pos_count)
             {
-                std::cout << "Finished. Converted " << numProcessedPositions << " positions.\n";
-                return;
+                break;
             }
         }
 
@@ -7755,6 +7762,11 @@ namespace binpack
         }
 
         std::cout << "Finished. Converted " << numProcessedPositions << " positions.\n";
+
+        // Print filtering recap
+        std::cout << "Checks filtered: " << filtered_checks_counter << " \n";
+        std::cout << "Captures filtered: " << filtered_captures_counter << " \n";
+        std::cout << "Scores filtered: " << filtered_scores_counter << " \n";
     }
 
     inline void validateBinpack(std::string inputPath)
