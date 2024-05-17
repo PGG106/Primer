@@ -7523,16 +7523,17 @@ namespace binpack
         }
     };
 
-    inline float convert_result(int result) {
-        if (result == 0) return 1;
+    inline float convert_result(float result)
+    {
+        if (result == 0) return 0.5;
         else if (result == -1) return 0;
-        return 2;
+        return 1;
     }
 
-    inline int invert_wdl(int result) {
-        if (result == 2) return 0;
-        else if (result == 0) return 2;
-        // 1 stays the same
+    inline float invert_wdl(float result)
+    {
+        if (result == 1) return 0;
+        else if (result == 0) return 1;
         return result;
     }
 
@@ -7610,7 +7611,6 @@ namespace binpack
     {
         // extract the result and score
         auto score = plain.score;
-        // skip if the score do be too big
      
         auto result = convert_result(plain.result);
         // convert the result and score to white pov
@@ -7630,6 +7630,7 @@ namespace binpack
         std::ostringstream str{};
         str << std::setprecision(1) << result;
         buffer += str.str();
+        buffer += "\n";
     }
 
     inline void emitBinEntry(std::vector<char>& buffer, const TrainingDataEntry& plain)
